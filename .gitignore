@@ -1,0 +1,52 @@
+# Workspace-local tooling — do not commit the Composer binary.
+.tools/composer.phar
+.tools/*.phar
+
+# Scratch space used during setup/verification.
+.tmp-extract/
+.tmp-check/
+
+# Ad-hoc database inspection output. These often contain credentials or full
+# connection strings, so they must never be committed.
+.mysql-*.txt
+.mysql-check.txt
+.mysql-show.txt
+
+# Node
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.expo-export-check/
+
+# Laravel
+backend/vendor/
+backend/storage/*.key
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/bootstrap/cache/*.php
+backend/database/database.sqlite
+backend/public/build/
+backend/public/hot
+backend/.phpunit.result.cache
+
+# Environment — never commit real credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
