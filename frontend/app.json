@@ -6,8 +6,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "scheme": "autosecure",
-    "newArchEnabled": true,
-    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ng.autosecure.app",
@@ -19,7 +17,6 @@
     },
     "android": {
       "package": "ng.autosecure.app",
-      "edgeToEdgeEnabled": true,
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
@@ -30,7 +27,10 @@
     "web": {
       "bundler": "metro"
     },
-    "plugins": ["expo-secure-store"],
+    "plugins": [
+      "expo-secure-store",
+      "expo-status-bar"
+    ],
     "extra": {
       "//": "Non-secret runtime configuration. Secrets must never live here.",
       "apiVersion": "v1"
