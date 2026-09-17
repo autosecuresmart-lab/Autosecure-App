@@ -43,8 +43,16 @@ class Vendor extends BaseModel
         'service_radius_km',
         'opening_hours',
         'cancellation_policy',
+        'status',
+        'is_publicly_visible',
+        'verified_at',
+        'verified_by_admin_id',
         'commission_percent',
         'subscription_fee',
+        'subscription_starts_at',
+        'subscription_expires_at',
+        'rating_average',
+        'rating_count',
         'settlement_details',
         'metadata',
     ];
@@ -95,6 +103,16 @@ class Vendor extends BaseModel
         return $this->hasMany(Booking::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function settlements(): HasMany
+    {
+        return $this->hasMany(VendorSettlement::class);
+    }
+
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(Admin::class, 'verified_by_admin_id');
@@ -110,6 +128,19 @@ class Vendor extends BaseModel
         }
 
         return $this->subscription_expires_at === null || $this->subscription_expires_at->isFuture();
+    }
+
+    public function recalculateRating(): void
+    {
+        $stats = $this->reviews()
+            ->where('is_published', true)
+            ->selectRaw('AVG(rating) as avg_rating, COUNT(*) as total_reviews')
+            ->first();
+
+        $this->updateQuietly([
+            'rating_average' => round((float) ($stats->avg_rating ?? 0), 2),
+            'rating_count' => (int) ($stats->total_reviews ?? 0),
+        ]);
     }
 
     public function effectiveCommissionPercent(): float
@@ -130,5 +161,24 @@ class Vendor extends BaseModel
                 $q->whereNull('subscription_expires_at')
                     ->orWhere('subscription_expires_at', '>', now());
             });
+    }
+
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if (blank($term)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($term) {
+            $q->where('business_name', 'like', "%{$term}%")
+                ->orWhere('trading_name', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%")
+                ->orWhere('city', 'like', "%{$term}%")
+                ->orWhere('state', 'like', "%{$term}%")
+                ->orWhereHas('services', function (Builder $sq) use ($term) {
+                    $sq->where('name', 'like', "%{$term}%")
+                        ->orWhere('description', 'like', "%{$term}%");
+                });
+        });
     }
 }

@@ -29,6 +29,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cron Secret Key
+    |--------------------------------------------------------------------------
+    | Used to secure HTTP cron webhook triggers.
+    */
+    'cron' => [
+        'key' => env('CRON_KEY', 'autosecure-gprs-cron-secret'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Mobile app
     |--------------------------------------------------------------------------
     | `scheme` is the custom URL scheme declared in frontend/app.json. Password
@@ -140,26 +150,24 @@ return [
     */
     'devices' => [
         'tracker' => [
-            // NOTE: `?:` rather than a default argument. An unquoted `null` in
-            // .env is converted by Laravel to a real null, which would otherwise
-            // leave the driver as an empty string.
-            'driver' => env('TRACKER_DRIVER') ?: 'null',
+            // Driver is configured for GPRS hardware protocol.
+            'driver' => env('TRACKER_DRIVER') ?: 'gprs',
             'base_url' => env('TRACKER_BASE_URL'),
             'api_key' => env('TRACKER_API_KEY'),
             'api_secret' => env('TRACKER_API_SECRET'),
-            // Commands the platform will send. Actual support is unconfirmed.
+            // Commands the platform will send.
             'supports' => [
                 'live_location' => true,
                 'history' => true,
                 'remote_shutdown' => true,
-                'remote_restore' => null,
-                'call_vehicle' => null,
+                'remote_restore' => true,
+                'call_vehicle' => true,
                 'theft_trigger' => true,
             ],
         ],
 
         'dashcam' => [
-            'driver' => env('DASHCAM_DRIVER') ?: 'null',
+            'driver' => env('DASHCAM_DRIVER') ?: 'openapi',
             'base_url' => env('DASHCAM_BASE_URL'),
             'app_key' => env('DASHCAM_APP_KEY'),
             'app_secret' => env('DASHCAM_APP_SECRET'),

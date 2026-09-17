@@ -45,8 +45,20 @@ class Booking extends BaseModel
         'vehicle_id',
         'vendor_id',
         'type',
+        'status',
+        'payment_status',
         'fulfilment',
         'scheduled_at',
+        'completed_at',
+        'cancelled_at',
+        'cancellation_reason',
+        'subtotal',
+        'discount',
+        'coins_redeemed',
+        'commission_percent',
+        'commission_amount',
+        'total',
+        'currency',
         'customer_note',
         'vendor_note',
         'metadata',
@@ -109,6 +121,26 @@ class Booking extends BaseModel
     public function maintenanceRecords(): HasMany
     {
         return $this->hasMany(MaintenanceRecord::class);
+    }
+
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+
+    public function settlement()
+    {
+        return $this->hasOne(VendorSettlement::class);
+    }
+
+    public function settlements(): HasMany
+    {
+        return $this->hasMany(VendorSettlement::class);
+    }
+
+    public function canBeCancelled(): bool
+    {
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_CONFIRMED]);
     }
 
     /**

@@ -53,9 +53,24 @@ class Vehicle extends BaseModel
         return $this->hasMany(Device::class);
     }
 
+    public function device(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Device::class)->latestOfMany();
+    }
+
     public function tracker(): HasMany
     {
         return $this->devices()->where('type', 'tracker');
+    }
+
+    public function trackerDevice(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Device::class)->where('type', 'tracker')->latestOfMany();
+    }
+
+    public function positions(): HasMany
+    {
+        return $this->hasMany(DevicePosition::class);
     }
 
     public function dashcams(): HasMany
@@ -97,14 +112,14 @@ class Vehicle extends BaseModel
         return $this->hasMany(TheftEvent::class);
     }
 
-    public function positions(): HasMany
-    {
-        return $this->hasMany(DevicePosition::class);
-    }
-
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function reminders(): HasMany
+    {
+        return $this->hasMany(MaintenanceReminder::class);
     }
 
     public function displayName(): string
@@ -112,4 +127,10 @@ class Vehicle extends BaseModel
         return $this->nickname
             ?: trim(implode(' ', array_filter([$this->make, $this->model]))) ?: $this->plate_number;
     }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->displayName();
+    }
 }
+

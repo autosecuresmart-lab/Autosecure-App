@@ -28,10 +28,14 @@ interface SignInPayload {
 
 interface SignUpPayload {
   name: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
-  phone?: string;
+  phone: string;
   password: string;
   password_confirmation: string;
+  account_type?: 'individual' | 'business';
+  company_name?: string;
 }
 
 interface AuthContextValue {

@@ -477,6 +477,11 @@ class DeviceTest extends TestCase
     {
         $owner = User::factory()->create();
 
+        config([
+            'autosecure.devices.tracker.driver' => 'null',
+            'autosecure.devices.dashcam.driver' => 'null',
+        ]);
+
         $this->actingAs($owner, 'sanctum')
             ->getJson('/api/v1/devices')
             ->assertOk()

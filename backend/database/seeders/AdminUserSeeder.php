@@ -20,13 +20,8 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         $email = env('ADMIN_EMAIL', 'admin@autosecure.ng');
-        $password = env('ADMIN_PASSWORD');
+        $password = env('ADMIN_PASSWORD', '123456789');
         $generated = false;
-
-        if (blank($password)) {
-            $password = Str::password(16);
-            $generated = true;
-        }
 
         $admin = Admin::firstOrNew(['email' => $email]);
 
@@ -37,9 +32,7 @@ class AdminUserSeeder extends Seeder
             'status' => 'active',
         ]);
 
-        if (! $admin->exists) {
-            $admin->password = Hash::make($password);
-        }
+        $admin->password = Hash::make($password);
 
         $admin->is_super_admin = true;
         $admin->save();

@@ -29,6 +29,9 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
+        'account_type',
+        'company_name',
+        'status',
         'password',
         'avatar_path',
         'locale',
@@ -143,6 +146,16 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function isBusiness(): bool
+    {
+        return $this->account_type === 'business';
+    }
+
+    public function isIndividual(): bool
+    {
+        return $this->account_type === 'individual' || $this->account_type === null;
     }
 
     /**

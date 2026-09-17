@@ -1,6 +1,8 @@
 # AUTOSECURE mobile app (`/frontend`)
 
-React Native application built with **Expo SDK 54** (React Native 0.81, React 19.1).
+React Native application built with **Expo SDK 57** (React Native 0.86, React 19.2, TypeScript 6).
+
+> SDK 57 requires **Node.js 22.13 or newer**.
 
 ## Run it
 
@@ -17,11 +19,21 @@ The Laravel API must be running (`php artisan serve` in `/backend`).
 - Android emulator reaches the host on `http://10.0.2.2:8000`
 - A physical device needs your machine's LAN IP
 
+> **Expo Go cannot run this project.** There is no Expo Go build for SDK 57 in the App
+> Store or Play Store yet, and Expo Go now requires an account login to load a project.
+> Use a development build instead — `npx expo run:android`, or
+> `eas build --profile development`. See Expo's
+> [development builds guide](https://docs.expo.dev/develop/development-builds/introduction/).
+
+> **`CI=1` is invalid.** The Expo CLI parses `CI` as a boolean, so `set CI=1` dies with
+> `GetEnv.NoBoolean: 1 is not a boolean`. Use `CI=true`.
+
 ## Checks
 
 ```bash
-npm run typecheck         # tsc --noEmit
+npm run typecheck                    # tsc --noEmit
 npx expo export --platform android   # verifies the Metro bundle builds
+npx -y expo-doctor@latest            # 21 project-health checks
 ```
 
 ## Structure

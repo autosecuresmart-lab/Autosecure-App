@@ -29,3 +29,8 @@ Route::get('/login', function () {
 Route::get('/password/reset/{token}', function () {
     return redirect()->route('landing');
 })->name('password.reset');
+
+// HTTP Cron URL for external cron job schedulers (Cron-Job.org, EasyCron, cPanel, etc.)
+Route::match(['get', 'post'], '/cron/gprs-stream', [\App\Http\Controllers\Api\V1\CronController::class, 'gprsStream'])->name('cron.gprs-stream');
+Route::match(['get', 'post'], '/cron/telemetry-sync', [\App\Http\Controllers\Api\V1\CronController::class, 'gprsStream'])->name('cron.telemetry-sync');
+

@@ -5,19 +5,25 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\CoinTransaction;
 use App\Models\SubscriptionPlan;
+use App\Services\Payments\PaymentService;
 use App\Services\Subscriptions\EntitlementService;
+use App\Services\Subscriptions\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Subscriptions + Coins read endpoints.
+ * Subscriptions + Coins endpoints.
  *
  * Entitlements are resolved server side here and again by the `entitlement`
  * middleware — the client never decides what it is allowed to use.
  */
 class SubscriptionController extends Controller
 {
-    public function __construct(protected EntitlementService $entitlements) {}
+    public function __construct(
+        protected EntitlementService $entitlements,
+        protected SubscriptionService $subscriptionService,
+        protected PaymentService $paymentService,
+    ) {}
 
     public function plans(): JsonResponse
     {
@@ -48,6 +54,66 @@ class SubscriptionController extends Controller
         return response()->json([
             'subscription' => $this->entitlements->summaryFor($request->user()),
         ]);
+    }
+
+    /**
+     * Subscription history and receipt trail.
+     * GET /api/v1/subscriptions/history
+     */
+    public function history(Request $request): JsonResponse
+    {
+        $data = $this->subscriptionService->getUserHistory($request->user());
+
+        return response()->json([
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Cancel auto-renew on active subscription.
+     * POST /api/v1/subscriptions/cancel
+     */
+    public function cancel(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $subscription = $this->subscriptionService->cancelAutoRenew($request->user(), $validated['reason'] ?? null);
+
+        return response()->json([
+            'message' => 'Subscription auto-renew cancelled.',
+            'data' => [
+                'uuid' => $subscription->uuid,
+                'status' => $subscription->status,
+                'auto_renew' => (bool) $subscription->auto_renew,
+                'cancelled_at' => $subscription->cancelled_at?->toIso8601String(),
+                'ends_at' => $subscription->ends_at?->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
+     * Initiate subscription renewal or upgrade checkout.
+     * POST /api/v1/subscriptions/renew
+     */
+    public function renew(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'plan_uuid' => ['required', 'string', 'exists:subscription_plans,uuid'],
+            'channel' => ['nullable', 'string', 'in:card,bank_transfer,ussd,qr,wallet'],
+            'idempotency_key' => ['nullable', 'string', 'max:100'],
+            'callback_url' => ['nullable', 'string'],
+        ]);
+
+        $result = $this->paymentService->initialize($request->user(), array_merge($validated, [
+            'purpose' => \App\Models\Payment::PURPOSE_SUBSCRIPTION,
+        ]));
+
+        return response()->json([
+            'message' => 'Subscription payment initialized.',
+            'data' => $result,
+        ], 201);
     }
 
     /**

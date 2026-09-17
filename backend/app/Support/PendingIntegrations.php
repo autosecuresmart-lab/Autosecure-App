@@ -67,34 +67,6 @@ class PendingIntegrations
                 'Reminder channel configuration (email/SMS provider)',
             ],
         ],
-        'finder' => [
-            'title' => 'Finder marketplace',
-            'summary' => 'Verified parts sellers, car washes and mechanics near you.',
-            'blocked_by' => [
-                'Approved final vendor annual fee and tiers',
-                'Commission percentage or flat fee per vendor category',
-                'Vendor verification document list and operating policy',
-            ],
-        ],
-        'bookings' => [
-            'title' => 'Bookings & orders',
-            'summary' => 'Book a service, track it and pay in the app.',
-            'blocked_by' => [
-                'Cancellation and dispute policy per category',
-                'Fulfilment rules (in-store, mobile, delivery, pickup)',
-                'Vendor settlement schedule',
-            ],
-        ],
-        'payments' => [
-            'title' => 'Payments',
-            'summary' => 'Subscriptions, bookings and refunds.',
-            'blocked_by' => [
-                'Payment gateway selection and API credentials',
-                'Webhook signature/verification method',
-                'Refund ownership and reversal flow',
-                'Payout/settlement account verification provider',
-            ],
-        ],
     ];
 
     /**

@@ -20,6 +20,14 @@ class VendorVerification extends BaseModel
 
     public const STAGE_MONITORING = 'monitoring';
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_PASSED = 'passed';
+
+    public const STATUS_NEEDS_UPDATE = 'needs_update';
+
+    public const STATUS_REJECTED = 'rejected';
+
     /** Ordered pipeline, used by the admin portal to render progress. */
     public const STAGES = [
         self::STAGE_APPLICATION,

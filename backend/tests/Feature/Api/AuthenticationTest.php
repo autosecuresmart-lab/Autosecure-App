@@ -39,6 +39,7 @@ class AuthenticationTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Numeric Check',
             'email' => 'numeric@example.com',
+            'phone' => '+2348000000002',
             'password' => 'Password!2345',
             'password_confirmation' => 'Password!2345',
         ]);

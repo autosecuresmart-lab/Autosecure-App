@@ -22,6 +22,60 @@ class ModuleController extends Controller
      * @var array<string, array{title: string, summary: string, features: array<int, string>, phase: string}>
      */
     public const MODULES = [
+        'incidents' => [
+            'title' => 'Incidents',
+            'summary' => 'Active vehicle theft reports, telemetry investigation and live recovery coordination.',
+            'features' => ['Incident dispatch queue', 'Telemetry & GPS trail playback', 'Evidence & incident log', 'Recovery status update'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'live-map' => [
+            'title' => 'Live Map',
+            'summary' => 'Real-time GPS tracking and geofence monitoring of all connected fleet vehicles.',
+            'features' => ['Live vehicle map marker clustering', 'Geofence boundaries', 'Speed & ignition telemetry', 'Emergency command dispatch'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'assignments' => [
+            'title' => 'Assignments',
+            'summary' => 'Field recovery team assignment, dispatch routing and real-time response management.',
+            'features' => ['Recovery officer allocation', 'Incident task checklist', 'Field communication log', 'Resolution verification'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'alerts' => [
+            'title' => 'Alerts',
+            'summary' => 'Instant telemetry alarms, speed alerts, geo-fence breaches and system notifications.',
+            'features' => ['Real-time alarm pipeline', 'Severity classification', 'Automated push & SMS rules', 'Acknowledge & resolve queue'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'reports' => [
+            'title' => 'Reports',
+            'summary' => 'Subscriptions, churn, bookings, revenue, vendors, Coins and feature usage.',
+            'features' => ['Revenue and commission', 'Conversion and churn', 'Device command success rate', 'Loyalty liability'],
+            'phase' => 'Phase 6',
+        ],
+        'sla-monitoring' => [
+            'title' => 'SLA Monitoring',
+            'summary' => 'Incident response time metrics, officer recovery SLA targets and performance benchmarks.',
+            'features' => ['Response time tracking', 'SLA breach notifications', 'Officer performance scorecard', 'Weekly SLA trends'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'audit-logs' => [
+            'title' => 'Audit logs',
+            'summary' => 'Every customer, staff, device and sensitive-data action.',
+            'features' => ['Searchable audit trail', 'Actor and record filters', 'Sensitive access review', 'Export'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'users-roles' => [
+            'title' => 'Users & Roles',
+            'summary' => 'Administrative staff permissions, operational roles and access control policies.',
+            'features' => ['Staff directory', 'Role & permission assignment', 'Session management', '2FA enforcement'],
+            'phase' => 'Phase 2 onwards',
+        ],
+        'settings' => [
+            'title' => 'Settings',
+            'summary' => 'Platform settings: commission, coin rates, grace period, retention.',
+            'features' => ['Commercial rules', 'Feature toggles', 'Retention policy', 'Change audit'],
+            'phase' => 'Phase 3 onwards',
+        ],
         'customers' => [
             'title' => 'Customers & Vehicles',
             'summary' => 'Customer records, linked vehicles and devices, approved account actions.',
@@ -76,12 +130,6 @@ class ModuleController extends Controller
             'features' => ['Earn and redeem rules', 'Ledger inspection', 'Reversals and expiry', 'Liability balance'],
             'phase' => 'Phase 6',
         ],
-        'reports' => [
-            'title' => 'Reports',
-            'summary' => 'Subscriptions, churn, bookings, revenue, vendors, Coins and feature usage.',
-            'features' => ['Revenue and commission', 'Conversion and churn', 'Device command success rate', 'Loyalty liability'],
-            'phase' => 'Phase 6',
-        ],
         'content' => [
             'title' => 'Content',
             'summary' => 'Finder categories, help content, notification templates and policies.',
@@ -93,18 +141,6 @@ class ModuleController extends Controller
             'summary' => 'Customer support cases and controlled, audited access to sensitive data.',
             'features' => ['Support cases', 'Time-boxed access grants', 'Sensitive access log'],
             'phase' => 'Phase 2 onwards',
-        ],
-        'audit-logs' => [
-            'title' => 'Audit logs',
-            'summary' => 'Every customer, staff, device and sensitive-data action.',
-            'features' => ['Searchable audit trail', 'Actor and record filters', 'Sensitive access review', 'Export'],
-            'phase' => 'Phase 2 onwards',
-        ],
-        'settings' => [
-            'title' => 'Settings',
-            'summary' => 'Platform settings: commission, coin rates, grace period, retention.',
-            'features' => ['Commercial rules', 'Feature toggles', 'Retention policy', 'Change audit'],
-            'phase' => 'Phase 3 onwards',
         ],
     ];
 
@@ -124,10 +160,29 @@ class ModuleController extends Controller
 
         abort_if($definition === null, 404);
 
-        return view('manage.module', [
+        $viewName = view()->exists('manage.'.$module) ? 'manage.'.$module : 'manage.module';
+
+        $extraData = [];
+        if ($module === 'incidents') {
+            $extraData = [
+                'incidents' => \App\Models\TheftEvent::with(['vehicle.user', 'device'])->latest()->paginate(15),
+                'active_count' => \App\Models\TheftEvent::where('status', \App\Models\TheftEvent::STATUS_OPEN)->count(),
+                'resolved_count' => \App\Models\TheftEvent::where('status', \App\Models\TheftEvent::STATUS_RESOLVED)->count(),
+                'total_count' => \App\Models\TheftEvent::count(),
+            ];
+        } elseif ($module === 'live-map') {
+            $extraData = [
+                'vehicles' => \App\Models\Vehicle::with(['device', 'user'])->latest()->get(),
+                'total_devices' => \App\Models\Device::count(),
+                'active_devices' => \App\Models\Device::where('status', 'active')->count(),
+            ];
+        }
+
+        return view($viewName, array_merge([
             'module' => $module,
             'definition' => $definition,
             'navigation' => self::MODULES,
-        ]);
+        ], $extraData));
     }
 }
+

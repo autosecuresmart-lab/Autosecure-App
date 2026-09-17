@@ -22,17 +22,18 @@ class ResetPasswordNotification extends BaseResetPassword
     public function toMail($notifiable): MailMessage
     {
         $expiresIn = (int) config('auth.passwords.users.expire', 60);
+        $resetUrl = $this->resetUrl($notifiable);
 
         return (new MailMessage)
             ->subject('Reset your AUTOSECURE password')
-            ->greeting('Hello '.($notifiable->name ?? ''))
-            ->line('We received a request to reset the password for your AUTOSECURE account.')
-            ->action('Reset password', $this->resetUrl($notifiable))
-            ->line('On the phone with the AUTOSECURE app installed, that button opens the app directly.')
-            ->line('If it does not open, launch AUTOSECURE, choose "Forgot password" and enter this code:')
+            ->action('Reset Password', $resetUrl)
             ->line($this->token)
-            ->line("This code expires in {$expiresIn} minutes.")
-            ->line('If you did not ask for this, you can ignore this email — your password has not changed.');
+            ->view('emails.reset-password', [
+                'name' => $notifiable->name ?? 'there',
+                'token' => $this->token,
+                'resetUrl' => $resetUrl,
+                'expiresIn' => $expiresIn,
+            ]);
     }
 
     /**

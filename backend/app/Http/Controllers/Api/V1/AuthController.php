@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Mail\WelcomeMail;
 use App\Models\DeviceToken;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -13,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 // Aliased: the validation rule and the password broker share the name `Password`.
 use Illuminate\Support\Facades\Password as PasswordBroker;
 use Illuminate\Support\Str;
@@ -36,20 +38,30 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
+            'first_name' => ['required_without:name', 'nullable', 'string', 'max:60'],
+            'last_name' => ['required_without:name', 'nullable', 'string', 'max:60'],
+            'name' => ['nullable', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:190', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:32', 'unique:users,phone'],
+            'phone' => ['required', 'string', 'max:32', 'unique:users,phone'],
+            'account_type' => ['nullable', 'in:individual,business'],
+            'company_name' => ['nullable', 'string', 'max:160'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'device_name' => ['nullable', 'string', 'max:120'],
             'platform' => ['nullable', 'in:ios,android,web'],
             'push_token' => ['nullable', 'string', 'max:512'],
         ]);
 
-        $user = DB::transaction(function () use ($data) {
+        $fullName = !empty($data['name'])
+            ? $data['name']
+            : trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+
+        $user = DB::transaction(function () use ($data, $fullName) {
             $user = User::create([
-                'name' => $data['name'],
+                'name' => $fullName,
                 'email' => $data['email'],
-                'phone' => $data['phone'] ?? null,
+                'phone' => $data['phone'],
+                'account_type' => $data['account_type'] ?? 'individual',
+                'company_name' => $data['company_name'] ?? null,
                 'password' => $data['password'],
             ]);
 
@@ -64,6 +76,12 @@ class AuthController extends Controller
 
         $this->registerPushToken($user, $data);
         $this->audit->log('auth.registered', $user, $user);
+
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user->name));
+        } catch (Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'message' => 'Account created.',

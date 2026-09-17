@@ -105,8 +105,12 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerDeviceProviders(): void
     {
-        // Intentionally empty: no provider has been supplied yet, so the
-        // `null` drivers answer HTTP 501 with the outstanding requirements.
+        /** @var DeviceProviderManager $manager */
+        $manager = $this->app->make(DeviceProviderManager::class);
+
+        $manager->extend('tracker', 'gprs', fn () => new \App\Services\Devices\Providers\GprsDeviceProvider());
+        $manager->extend('tracker', 'openapi', fn () => new \App\Services\Devices\Providers\OpenApiDeviceProvider());
+        $manager->extend('dashcam', 'openapi', fn () => new \App\Services\Devices\Providers\OpenApiDeviceProvider());
     }
 
     /**

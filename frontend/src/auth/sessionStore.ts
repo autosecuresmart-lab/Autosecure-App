@@ -12,6 +12,32 @@ import type { Entitlements, User } from '../api/types';
 
 const TOKEN_KEY = 'autosecure.api_token';
 const PROFILE_KEY = 'autosecure.profile';
+const ONBOARDING_KEY = 'autosecure.onboarding_completed';
+
+export async function saveOnboardingCompleted(): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
+  } catch {
+    // Ignore.
+  }
+}
+
+export async function readOnboardingCompleted(): Promise<boolean> {
+  try {
+    const raw = await SecureStore.getItemAsync(ONBOARDING_KEY);
+    return raw === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export async function clearOnboardingCompleted(): Promise<void> {
+  try {
+    await SecureStore.deleteItemAsync(ONBOARDING_KEY);
+  } catch {
+    // Ignore.
+  }
+}
 
 export interface StoredProfile {
   user: User;

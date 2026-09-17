@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 /**
  * AUTOSECURE design tokens.
  *
@@ -48,13 +50,26 @@ export const radii = {
   pill: 999,
 } as const;
 
+export const fonts = {
+  header: Platform.select({
+    ios: 'Helvetica Neue',
+    android: 'Helvetica',
+    default: 'Helvetica, "Helvetica Neue", Arial, sans-serif',
+  }),
+  body: Platform.select({
+    ios: 'Aeonik',
+    android: 'Aeonik',
+    default: 'Aeonik, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  }),
+} as const;
+
 export const typography = {
-  title: { fontSize: 24, fontWeight: '700' },
-  heading: { fontSize: 18, fontWeight: '700' },
-  subheading: { fontSize: 15, fontWeight: '600' },
-  body: { fontSize: 14, fontWeight: '400' },
-  caption: { fontSize: 12, fontWeight: '400' },
-  label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
+  title: { fontFamily: fonts.header, fontSize: 24, fontWeight: '700' },
+  heading: { fontFamily: fonts.header, fontSize: 18, fontWeight: '700' },
+  subheading: { fontFamily: fonts.header, fontSize: 15, fontWeight: '600' },
+  body: { fontFamily: fonts.body, fontSize: 14, fontWeight: '400' },
+  caption: { fontFamily: fonts.body, fontSize: 12, fontWeight: '400' },
+  label: { fontFamily: fonts.header, fontSize: 11, fontWeight: '700', letterSpacing: 0.6, textTransform: 'uppercase' },
 } as const;
 
 /**

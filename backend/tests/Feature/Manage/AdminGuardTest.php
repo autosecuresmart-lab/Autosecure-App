@@ -56,13 +56,14 @@ class AdminGuardTest extends TestCase
     {
         $admin = Admin::factory()->create(['password' => 'Password!2345']);
 
-        $this->post('/manage/login', [
+        $this->post('/manage/auth/login', [
             'email' => $admin->email,
             'password' => 'Password!2345',
         ])->assertRedirect(route('manage.dashboard'));
 
         $this->assertAuthenticatedAs($admin, 'admin');
-        $this->get('/manage')->assertOk()->assertSee('Dashboard');
+        $this->get('/manage/dashboard')->assertOk()->assertSee('Dashboard');
+        $this->get('/manage')->assertRedirect(route('manage.dashboard'));
     }
 
     public function test_a_suspended_admin_cannot_sign_in(): void

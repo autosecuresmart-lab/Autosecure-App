@@ -91,6 +91,12 @@ class Device extends BaseModel
         return $this->type === self::TYPE_DASHCAM;
     }
 
+    public function isOnline(): bool
+    {
+        return (bool) ($this->is_online ?? ($this->status === self::STATUS_ACTIVE));
+    }
+
+
     /**
      * A human label for the device, falling back to brand/model then serial.
      */
